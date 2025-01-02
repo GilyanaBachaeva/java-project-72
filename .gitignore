@@ -5,3 +5,6 @@ app.iml
 /app/build
 
 
+.gradle/8.5/checksums/checksums.lock
+/.gradle
+/build
