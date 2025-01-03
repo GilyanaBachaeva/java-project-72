@@ -1,10 +1,15 @@
+# Gradle files
+.gradle/
+build/
+app/build/
+*.jar
+*.war
+*.ear
+*.class
+*.log
 
-/.idea
-app.iml
-/app/.gradle
-/app/build
-
-
-.gradle/8.5/checksums/checksums.lock
-/.gradle
-/build
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
