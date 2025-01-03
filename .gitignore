@@ -1,9 +1,7 @@
-
-/.idea
-app.iml
-/app/.gradle
-/app/build
 /build
+/app/build
+/.idea
+/app/.gradle
 .idea
 .idea/compiler.xml
 app/.gradle/8.5/executionHistory/executionHistory.lock
@@ -15,4 +13,4 @@ app/daemon/8.5/daemon-19316.out.log
 /app/caches
 /app/native
 /app/jdks
-
+/.gradle/

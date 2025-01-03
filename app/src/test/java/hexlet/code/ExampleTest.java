@@ -8,4 +8,8 @@ public class ExampleTest {
     public void testAddition1() throws Exception {
         assertEquals(2, 1 + 1);
     }
-}
+    @Test
+    public void testAddition2() throws Exception {
+        assertEquals(4, 2 + 2);
+    }
+}ls
