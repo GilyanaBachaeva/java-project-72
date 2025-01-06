@@ -20,4 +20,4 @@ COPY /app .
 
 RUN gradle installDist
 
-CMD .build/install/java-project-72/bin/java-project-72
+CMD ./build/install/app-shadow/bin/app
