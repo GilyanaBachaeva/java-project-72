@@ -26,6 +26,8 @@ lint:
 
 update-deps:
 	make -C app update-deps
+start:
+    APP_ENV=development ./gradlew run
 
 
 build-run: build run

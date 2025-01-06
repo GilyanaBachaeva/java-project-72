@@ -29,6 +29,8 @@ lint:
 
 check-deps:
 	./gradlew dependencyUpdates -Drevision=release
+start:
+    APP_ENV=development ./gradlew run
 
 
 build-run: build run

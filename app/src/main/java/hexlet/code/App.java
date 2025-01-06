@@ -1,8 +1,6 @@
 package hexlet.code;
 
 import io.javalin.rendering.template.JavalinJte;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.javalin.Javalin;
 
 public class App {
