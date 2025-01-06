@@ -1,27 +1,31 @@
 package hexlet.code;
 
+import io.javalin.rendering.template.JavalinJte;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.javalin.Javalin;
 
 public class App {
-    private static Javalin app;
-    private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
-
+    private static int getPort() {
+        String port = System.getenv().getOrDefault("PORT", "7070");
+        return Integer.parseInt(port);
+    }
     public static Javalin getApp() {
-        // Получаем порт из переменной окружения или используем 7000 по умолчанию
-        final int port = Integer.parseInt(System.getenv("PORT") != null ? System.getenv("PORT") : "7000");
-        if (app == null) {
-            app = Javalin.create(config -> {
-                // Настройка приложения Javalin
-                config.bundledPlugins.enableDevLogging();
-            }).start(port);
-            app.get("/", ctx -> ctx.result("Hello 29%World"));
-            LOGGER.info("Приложение Javalin запущено на порту {}", port);
-        }
+
+        Javalin app = Javalin.create(config -> {
+            config.bundledPlugins.enableDevLogging();
+            config.fileRenderer(new JavalinJte());
+        });
+
+        app.get("/", ctx -> {
+            ctx.result("Hello, 29World!");
+        });
+
         return app;
     }
+
     public static void main(String[] args) {
-        getApp(); // Запуск приложения
+        Javalin app = getApp();
+        app.start(getPort());
     }
 }
