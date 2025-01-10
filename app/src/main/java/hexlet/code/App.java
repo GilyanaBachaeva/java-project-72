@@ -16,7 +16,7 @@ public class App {
         });
 
         app.get("/", ctx -> {
-            ctx.result("Hello, 2911! World!");
+            ctx.result("Hello, 2911*World!");
         });
 
         return app;
