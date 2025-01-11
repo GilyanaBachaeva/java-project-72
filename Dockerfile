@@ -24,4 +24,4 @@ COPY /app .
 
 RUN gradle installDist
 
-CMD ["./build/install/app-shadow/bin/app"]
+CMD app/build/install/app/bin/app
