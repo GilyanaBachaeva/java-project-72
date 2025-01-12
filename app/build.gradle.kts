@@ -29,7 +29,7 @@ dependencies {
 
     implementation("com.h2database:h2:2.2.220") // для работы с БД
     implementation("com.zaxxer:HikariCP:5.0.1")// Хикари БД
-    implementation("org.postgresql:postgresql:42.7.2") // для работы с БД postgresql
+    implementation("org.postgresql:postgresql:42.2.20") // для работы с БД postgresql
 
     implementation("io.javalin:javalin-bundle:6.1.3")//для тестировония на Javalin
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
