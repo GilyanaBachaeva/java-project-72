@@ -22,7 +22,8 @@ repositories {
 }
 dependencies {
     implementation("io.javalin:javalin:6.1.3")
-    implementation("org.slf4j:slf4j-simple:2.0.10")//logger
+    implementation("org.slf4j:slf4j-api:2.0.10")
+    implementation("ch.qos.logback:logback-classic:1.2.10")
     implementation("io.javalin:javalin-rendering:6.1.3")
     implementation("gg.jte:jte:3.0.1")
 
