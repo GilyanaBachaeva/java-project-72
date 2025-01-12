@@ -47,7 +47,7 @@ public class App {
         });
 
         app.get("/", ctx -> {
-            ctx.result("Hello, 2911*World!");
+            ctx.render("index.jte");
         });
 
         return app;
