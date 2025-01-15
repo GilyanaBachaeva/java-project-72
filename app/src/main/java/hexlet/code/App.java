@@ -2,6 +2,7 @@ package hexlet.code;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import hexlet.code.controller.UrlController;
 import hexlet.code.repository.BaseRepository;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
@@ -49,6 +50,9 @@ public class App {
         app.get("/", ctx -> {
             ctx.render("index.jte");
         });
+        app.post("/urls", UrlController::addUrl);
+        app.get("/urls", UrlController::getAllUrls);
+        app.get("/urls/{id}", UrlController::getUrlById);
 
         return app;
     }
