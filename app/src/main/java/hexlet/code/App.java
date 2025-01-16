@@ -21,25 +21,15 @@ import gg.jte.resolve.ResourceCodeResolver;
 
 @Slf4j
 public class App {
+
+    public static void main(String[] args) throws SQLException, IOException {
+        Javalin app = getApp();
+        app.start(getPort());
+    }
+
     public static Javalin getApp() throws IOException, SQLException {
-        // Создание БД Н2 в памяти
-        var hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(getDataBaseUrl());
-        var dataSource = new HikariDataSource(hikariConfig);
-
-        // Получение пути до файла src/main/resources/schema.sql,
-        // содержащий sql-запросы на создание таблиц в БД
-        var url = App.class.getClassLoader().getResourceAsStream("schema.sql");
-        var sql = new BufferedReader(new InputStreamReader(url))
-                .lines()
-                .collect(Collectors.joining("\n"));
-        log.info(sql);
-
-        // Установка соединения и инициализация БД через стейтмент
-        try (var connection = dataSource.getConnection();
-             var statement = connection.createStatement()) {
-            statement.execute(sql);
-        }
+        HikariDataSource dataSource = setupDataSource();
+        initializeDatabase(dataSource);
         BaseRepository.setDataSource(dataSource);
 
         Javalin app = Javalin.create(config -> {
@@ -47,43 +37,60 @@ public class App {
             config.fileRenderer(new JavalinJte(createTemplateEngine()));
         });
 
-        app.get("/", ctx -> {
-            ctx.render("index.jte");
-        });
+        setupRoutes(app);
+        return app;
+    }
+
+    private static HikariDataSource setupDataSource() {
+        var hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(getDataBaseUrl());
+        return new HikariDataSource(hikariConfig);
+    }
+
+    private static void initializeDatabase(HikariDataSource dataSource) throws IOException, SQLException {
+        var sql = loadSqlSchema();
+        log.info(sql);
+
+        try (var connection = dataSource.getConnection();
+             var statement = connection.createStatement()) {
+            statement.execute(sql);
+        }
+    }
+
+    private static String loadSqlSchema() throws IOException {
+        var url = App.class.getClassLoader().getResourceAsStream("schema.sql");
+        return new BufferedReader(new InputStreamReader(url))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
+    private static void setupRoutes(Javalin app) {
+        app.get("/", ctx -> ctx.render("index.jte"));
 
         app.post("/urls", ctx -> {
             String urlInput = ctx.formParam("url");
-            String flashMessage;
-
-            // Логика добавления URL
-            boolean isAdded = BaseRepository.addUrl(urlInput); // Предположим, что этот метод возвращает true, если добавление прошло успешно
-
-            if (isAdded) {
-                flashMessage = "Страница успешно добавлена";
-            } else {
-                flashMessage = "Ошибка при добавлении страницы";
-            }
-
-            ctx.sessionAttribute("flashMessage", flashMessage); // Сохраняем сообщение в сессии
-            ctx.redirect("/result"); // Перенаправляем на страницу результатов
+            String flashMessage = addUrl(urlInput);
+            ctx.sessionAttribute("flashMessage", flashMessage);
+            ctx.redirect("/result");
         });
 
         app.get("/result", ctx -> {
             String flashMessage = ctx.sessionAttribute("flashMessage");
-            ctx.sessionAttribute("flashMessage", null); // Очищаем сообщение после отображения
+            ctx.sessionAttribute("flashMessage", null);
             ctx.render("result.jte", Map.of("flashMessage", flashMessage));
         });
 
         app.get("/urls", UrlController::getAllUrls);
         app.get("/urls/{id}", UrlController::getUrlById);
+    }
 
-        return app;
+    private static String addUrl(String urlInput) {
+        boolean isAdded = BaseRepository.addUrl(urlInput);
+        return isAdded ? "Страница успешно добавлена" : "Ошибка при добавлении страницы";
     }
 
     private static String getDataBaseUrl() {
-        String url = System.getenv().getOrDefault("JDBC_DATABASE_URL",
-                "jdbc:h2:mem:project");
-        return url;
+        return System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project");
     }
 
     private static int getPort() {
@@ -94,12 +101,6 @@ public class App {
     private static TemplateEngine createTemplateEngine() {
         ClassLoader classLoader = App.class.getClassLoader();
         ResourceCodeResolver codeResolver = new ResourceCodeResolver("templates", classLoader);
-        TemplateEngine templateEngine = TemplateEngine.create(codeResolver, ContentType.Html);
-        return templateEngine;
-    }
-
-    public static void main(String[] args) throws SQLException, IOException {
-        Javalin app = getApp();
-        app.start(getPort());
+        return TemplateEngine.create(codeResolver, ContentType.Html);
     }
 }
