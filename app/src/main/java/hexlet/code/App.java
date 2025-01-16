@@ -12,12 +12,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
 import gg.jte.resolve.ResourceCodeResolver;
-
 
 @Slf4j
 public class App {
@@ -27,7 +27,7 @@ public class App {
         hikariConfig.setJdbcUrl(getDataBaseUrl());
         var dataSource = new HikariDataSource(hikariConfig);
 
-        //Получение пути до файла src/main/resources/schema.sql,
+        // Получение пути до файла src/main/resources/schema.sql,
         // содержащий sql-запросы на создание таблиц в БД
         var url = App.class.getClassLoader().getResourceAsStream("schema.sql");
         var sql = new BufferedReader(new InputStreamReader(url))
@@ -50,7 +50,30 @@ public class App {
         app.get("/", ctx -> {
             ctx.render("index.jte");
         });
-        app.post("/urls", UrlController::addUrl);
+
+        app.post("/urls", ctx -> {
+            String urlInput = ctx.formParam("url");
+            String flashMessage;
+
+            // Логика добавления URL
+            boolean isAdded = BaseRepository.addUrl(urlInput); // Предположим, что этот метод возвращает true, если добавление прошло успешно
+
+            if (isAdded) {
+                flashMessage = "Страница успешно добавлена";
+            } else {
+                flashMessage = "Ошибка при добавлении страницы";
+            }
+
+            ctx.sessionAttribute("flashMessage", flashMessage); // Сохраняем сообщение в сессии
+            ctx.redirect("/result"); // Перенаправляем на страницу результатов
+        });
+
+        app.get("/result", ctx -> {
+            String flashMessage = ctx.sessionAttribute("flashMessage");
+            ctx.sessionAttribute("flashMessage", null); // Очищаем сообщение после отображения
+            ctx.render("result.jte", Map.of("flashMessage", flashMessage));
+        });
+
         app.get("/urls", UrlController::getAllUrls);
         app.get("/urls/{id}", UrlController::getUrlById);
 

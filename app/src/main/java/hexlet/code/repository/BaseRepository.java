@@ -35,7 +35,7 @@ public class BaseRepository {
     }
 
     // Метод для добавления URL в базу данных
-    public static void addUrl(String url) {
+    public static boolean addUrl(String url) {
         String query = "INSERT INTO urls (url) VALUES (?)";
         try (Connection connection = hikariDataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -44,6 +44,7 @@ public class BaseRepository {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     // Метод для получения всех URL из базы данных
