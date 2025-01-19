@@ -42,7 +42,8 @@ public final class AppTest {
     @Test
     public void getUrlsListPageReturnSuccess() {
         JavalinTest.test(app, (server, client) -> {
-            assertThat(client.get("/urls").code()).isEqualTo(HTTP_OK);
+            var response = client.get("/urls");
+            assertThat(response.code()).isEqualTo(HTTP_OK);
         });
     }
 
