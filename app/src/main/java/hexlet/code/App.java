@@ -2,105 +2,66 @@ package hexlet.code;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import gg.jte.ContentType;
+import gg.jte.TemplateEngine;
+import gg.jte.resolve.ResourceCodeResolver;
+import hexlet.code.controller.RootController;
 import hexlet.code.controller.UrlController;
-import hexlet.code.repository.BaseRepository;
+import hexlet.code.util.NamedRoutes;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
-import lombok.extern.slf4j.Slf4j;
+import repository.BaseRepository;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import gg.jte.ContentType;
-import gg.jte.TemplateEngine;
-import gg.jte.resolve.ResourceCodeResolver;
-
-@Slf4j
 public class App {
+    private static final String LOCAL_H2_BASE = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;"
+            + "INIT=runscript from 'classpath:/schema.sql'";
 
-    public static void main(String[] args) throws SQLException, IOException {
-        Javalin app = getApp();
+    public static void main(String[] args) throws IOException, SQLException {
+        var app = getApp();
         app.start(getPort());
     }
-
     public static Javalin getApp() throws IOException, SQLException {
-        HikariDataSource dataSource = setupDataSource();
-        initializeDatabase(dataSource);
-        BaseRepository.setDataSource(dataSource);
-
-        Javalin app = Javalin.create(config -> {
-            config.bundledPlugins.enableDevLogging();
-            config.fileRenderer(new JavalinJte(createTemplateEngine()));
-        });
-
-        setupRoutes(app);
-        return app;
-    }
-
-    private static HikariDataSource setupDataSource() {
         var hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(getDataBaseUrl());
-        return new HikariDataSource(hikariConfig);
-    }
-
-    private static void initializeDatabase(HikariDataSource dataSource) throws IOException, SQLException {
-        var sql = loadSqlSchema();
-        log.info(sql);
-
+        hikariConfig.setJdbcUrl(getDbConfig());
+        var dataSource = new HikariDataSource(hikariConfig);
+        var url = App.class.getClassLoader().getResourceAsStream("schema.sql");
+        var sql = new BufferedReader(new InputStreamReader(url))
+                .lines().collect(Collectors.joining("\n"));
         try (var connection = dataSource.getConnection();
              var statement = connection.createStatement()) {
             statement.execute(sql);
         }
-    }
-
-    private static String loadSqlSchema() throws IOException {
-        var url = App.class.getClassLoader().getResourceAsStream("schema.sql");
-        return new BufferedReader(new InputStreamReader(url))
-                .lines()
-                .collect(Collectors.joining("\n"));
-    }
-
-    private static void setupRoutes(Javalin app) {
-        app.get("/", ctx -> ctx.render("index.jte"));
-
-        app.post("/urls", ctx -> {
-            String urlInput = ctx.formParam("url");
-            String flashMessage = addUrl(urlInput);
-            ctx.sessionAttribute("flashMessage", flashMessage);
-            ctx.redirect("/result");
+        BaseRepository.setDataSource(dataSource);
+        var app = Javalin.create(config -> {
+            config.fileRenderer(new JavalinJte(createTemplateEngine()));
+            config.bundledPlugins.enableDevLogging();
         });
-
-        app.get("/result", ctx -> {
-            String flashMessage = ctx.sessionAttribute("flashMessage");
-            ctx.sessionAttribute("flashMessage", null);
-            ctx.render("result.jte", Map.of("flashMessage", flashMessage));
-        });
-
-        app.get("/urls", UrlController::getAllUrls);
-        app.get("/urls/{id}", UrlController::getUrlById);
+        app.get(NamedRoutes.rootPath(), RootController::index);
+        app.get(NamedRoutes.urlsPath(), UrlController::index);
+        app.post(NamedRoutes.urlsPath(), UrlController::add);
+        app.get(NamedRoutes.urlPath("{id}"), UrlController::show);
+        return app;
     }
 
-    private static String addUrl(String urlInput) {
-        boolean isAdded = BaseRepository.addUrl(urlInput);
-        return isAdded ? "Страница успешно добавлена" : "Ошибка при добавлении страницы";
+    public static int getPort() {
+        var port = System.getenv().getOrDefault("PORT", "7070");
+        return Integer.valueOf(port);
     }
 
-    private static String getDataBaseUrl() {
-        return System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project");
+    public static String getDbConfig() {
+        return System.getenv().getOrDefault("JDBC_DATABASE_URL", LOCAL_H2_BASE);
     }
 
-    private static int getPort() {
-        String port = System.getenv().getOrDefault("PORT", "7070");
-        return Integer.parseInt(port);
-    }
-
-    private static TemplateEngine createTemplateEngine() {
+    public static TemplateEngine createTemplateEngine() {
         ClassLoader classLoader = App.class.getClassLoader();
         ResourceCodeResolver codeResolver = new ResourceCodeResolver("templates", classLoader);
-        return TemplateEngine.create(codeResolver, ContentType.Html);
+        TemplateEngine templateEngine = TemplateEngine.create(codeResolver, ContentType.Html);
+        return templateEngine;
     }
 }

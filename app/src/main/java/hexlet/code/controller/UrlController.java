@@ -1,45 +1,60 @@
 package hexlet.code.controller;
 
+import hexlet.code.dto.urls.UrlPage;
+import hexlet.code.dto.urls.UrlsPage;
+import hexlet.code.model.Url;
+import hexlet.code.util.NamedRoutes;
 import io.javalin.http.Context;
+import io.javalin.http.NotFoundResponse;
+import repository.UrlRepository;
+
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
+import java.net.URL;
+import java.sql.SQLException;
+import java.util.Optional;
 
-import hexlet.code.repository.BaseRepository;
+import static io.javalin.rendering.template.TemplateUtil.model;
 
 public class UrlController {
+    public static void index(Context ctx) throws SQLException {
+        var urls = UrlRepository.getEntities();
+        var page = new UrlsPage(urls);
+        String flash = ctx.consumeSessionAttribute("flash");
+        page.setFlash(flash);
+        ctx.render("urls/index.jte", model("page", page));
+    }
 
-    public static void addUrl(Context ctx) {
-        String urlInput = ctx.formParam("url");
+    public static void show(Context ctx) throws SQLException {
+        var id = ctx.pathParamAsClass("id", Long.class).get();
+        var url = UrlRepository.findById(id)
+                .orElseThrow(() -> new NotFoundResponse("Url not found"));
+        var page = new UrlPage(url);
+        ctx.render("urls/show.jte", model("page", page));
+    }
+
+    public static void add(Context ctx) throws SQLException,
+            MalformedURLException,
+            URISyntaxException,
+            IllegalArgumentException {
+        var name = ctx.formParam("url");
         try {
-            URI uri = new URI(urlInput);
-            String domain = uri.getScheme() + "://" + uri.getHost();
-            if (uri.getPort() != -1) {
-                domain += ":" + uri.getPort();
-            }
-
-            // Проверка на уникальность
-            if (BaseRepository.urlExists(domain)) {
-                ctx.attribute("flashMessage", "Страница уже существует");
+            URL absoluteUrl = new URI(name).toURL();
+            String schema = absoluteUrl.toURI().getScheme();
+            String authority = absoluteUrl.toURI().getAuthority();
+            Url url = new Url(schema + "://" + authority);
+            Optional<Url> foundedUrl = UrlRepository.findByName(url.getName());
+            if (foundedUrl.isEmpty()) {
+                UrlRepository.save(url);
+                ctx.sessionAttribute("flash", "Страница успешно добавлена");
             } else {
-                BaseRepository.addUrl(domain);
-                ctx.attribute("flashMessage", "Страница успешно добавлена");
+                ctx.sessionAttribute("flash", "Страница уже существует");
             }
-        } catch (URISyntaxException e) {
-            ctx.attribute("flashMessage", "Некорректный URL");
+            ctx.redirect(NamedRoutes.urlsPath());
+        } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
+            ctx.sessionAttribute("flash", "Некорректный URL");
+            ctx.redirect(NamedRoutes.rootPath());
         }
-
-        ctx.redirect("/");
-    }
-    public static void getAllUrls(Context ctx) {
-        List<String> urls = BaseRepository.getAllUrls(); // Метод для получения всех URL
-        ctx.render("urls.jte", Map.of("urls", urls));
-    }
-
-    public static void getUrlById(Context ctx) {
-        int id = Integer.parseInt(ctx.pathParam("id"));
-        String url = BaseRepository.getUrlById(id); // Метод для получения URL по ID
-        ctx.render("url.jte", Map.of("url", url));
     }
 }
