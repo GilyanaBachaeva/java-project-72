@@ -47,7 +47,7 @@ public class App { //константа определяет строку под
             //создается объект Statement, который используется для выполнения SQL-команд
             statement.execute(sql); //Метод execute(sql) выполняет все команды, загруженные из файла schema.sql
         }
-        BaseRepository.setDataSource(dataSource);
+        BaseRepository.dataSource = dataSource;
         //устанавливается созданный dataSource в статический класс BaseRepository.
         // Это позволяет другим частям приложения использовать этот источник данных для работы с базой данных.
         var app = Javalin.create(config -> {
