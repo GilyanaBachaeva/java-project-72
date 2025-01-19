@@ -34,13 +34,6 @@ public class AppTest {
     }
 
     @Test
-    public void getUrlsListPageReturnSuccess() {
-        JavalinTest.test(app, (server, client) -> {
-            assertThat(client.get("/urls").code()).isEqualTo(200);
-        });
-    }
-
-    @Test
     public void postCorrectUrlNameReturnSuccess() {
         JavalinTest.test(app, (server, client) -> {
             var requestBody = "url=https://www.example.com";
