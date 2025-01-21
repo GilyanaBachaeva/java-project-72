@@ -36,7 +36,7 @@
         </main>
         <footer class="footer border-top py-3 mt-5 bg-light">
             <div class="container-xl">
-                <div class="text-center">created by Gilyana Bachaeva</div>
+                <div class="text-center">created by Alexander Vinogradow</div>
             </div>
         </footer>
     </body>

@@ -26,16 +26,21 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.26.3")
     testImplementation("org.mockito:mockito-core:5.13.0")
-    testImplementation("io.javalin:javalin-testtools:6.3.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     implementation("io.javalin:javalin:6.3.0")
     implementation("io.javalin:javalin-rendering:6.3.0")
     implementation("io.javalin:javalin-bundle:6.3.0")
-    implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("org.slf4j:slf4j-api:1.7.30")
+    implementation("io.javalin:javalin-testtools:6.3.0")
+    //implementation("org.slf4j:slf4j-simple:2.0.16")
+    // https://mvnrepository.com/artifact/gg.jte/jte
     implementation("gg.jte:jte:3.1.12")
+    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("com.h2database:h2:2.2.220")
     implementation("org.postgresql:postgresql:42.7.2")
+    implementation("com.konghq:unirest-java:3.14.5")
+    implementation("com.konghq:unirest-objectmapper-jackson:4.2.9")
+    implementation("org.jsoup:jsoup:1.18.1")
 }
 
 tasks.test {

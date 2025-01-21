@@ -1,7 +1,7 @@
 package hexlet.code.util;
-//предназначен для управления маршрутами (URL-путями) в веб-приложении.
-// Он предоставляет статические методы, которые возвращают строки, представляющие различные маршруты
+
 public class NamedRoutes {
+
     public static String rootPath() {
         return "/";
     }
@@ -16,5 +16,9 @@ public class NamedRoutes {
 
     public static String urlPath(String id) {
         return "/urls/" + id;
+    }
+
+    public static String checksPath(String id) {
+        return urlPath(id) + "/checks";
     }
 }

@@ -4,12 +4,12 @@
 @template.layout.page(
 content = @`
     <section>
-         @if(page.getFlash() != null)
-                    <div class="rounded-0 m-0 alert alert-dismissible fade show ${page.getFlashType()}" role="alert">
-                        <p class="m-0">${page.getFlash()}</p>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-         @endif
+        @if(page.getFlash() != null)
+            <div class="rounded-0 m-0 alert alert-dismissible fade show ${page.getFlashType()}" role="alert">
+                <p class="m-0">${page.getFlash()}</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         <div class="container-lg mt-5">
             <h1>Сайты</h1>
                 <table class="table table-bordered table-hover mt-3">
@@ -30,14 +30,22 @@ content = @`
                                 <td>
                                     <a href="/urls/${url.getId()}">${url.getName()}</a>
                                 </td>
-                                <td>
-                                    пока что тут ничего
-                                    <!-- ${url.getLastCheck()} -->
-                                </td>
-                                <td>
-                                    пока что тут ничего
-                                    <!-- ${url.getCheckCode()} -->
-                                </td>
+                                @if(page.getChecks().isEmpty())
+                                    <td>
+                                    </td>
+                                    <td>
+                                    </td>
+                                @endif
+                                @for(var check : page.getChecks())
+                                    @if(check.getUrlId() == url.getId())
+                                        <td>
+                                            ${check.getFormattedTimestamp()}
+                                        </td>
+                                        <td>
+                                            ${check.getStatusCode()}
+                                        </td>
+                                    @endif
+                                @endfor
                             </tr>
                         @endfor
                     </tbody>

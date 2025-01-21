@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.sql.Timestamp;
+import java.util.LinkedList;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,8 +22,10 @@ public final class Url {
     private Timestamp createdAt;
     @ToString.Exclude
     private String formattedTimestamp;
+    private List<UrlCheck> checks;
 
-    public Url(String urlName) {
-        this.name = urlName;
+    public Url(String name) {
+        this.name = name;
+        checks = new LinkedList<>();
     }
 }

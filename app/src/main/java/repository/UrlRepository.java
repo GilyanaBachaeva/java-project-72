@@ -1,6 +1,7 @@
 package repository;
 
 import hexlet.code.model.Url;
+import hexlet.code.model.UrlCheck;
 import hexlet.code.util.TimestampFormatter;
 
 import java.sql.SQLException;
@@ -10,9 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class UrlRepository extends BaseRepository {
-    //Сохраняет новый объект Url в базе данных
+
     public static void save(Url url) throws SQLException {
-        // Проверка на существование URL
         String sql = "INSERT INTO urls (name) VALUES (?)";
         try (var conn = dataSource.getConnection();
              var preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -28,16 +28,7 @@ public class UrlRepository extends BaseRepository {
             }
         }
     }
-    //Обновляет поле createdAt для существующего URL в базе данных
-    public static void update(Url url) throws SQLException {
-        String sql = "UPDATE urls SET createdAt = NOW() WHERE name = ?";
-        try (var conn = dataSource.getConnection();
-             var preparedStatement = conn.prepareStatement(sql)) {
-            preparedStatement.setString(1, url.getName());
-            preparedStatement.executeUpdate();
-        }
-    }
-    //Находит и возвращает объект Url по его идентификатору (ID)
+
     public static Optional<Url> findById(Long id) throws SQLException {
         String sql = "SELECT * FROM urls WHERE id = ?";
         try (var conn = dataSource.getConnection();
@@ -46,18 +37,20 @@ public class UrlRepository extends BaseRepository {
             var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 var resultName = resultSet.getString("name");
-                var resultCreatedAt = resultSet.getTimestamp("createdAt");
+                var resultCreatedAt = resultSet.getTimestamp("created_at");
                 var resultId = resultSet.getLong("id");
                 Url resUrl = new Url(resultName);
                 resUrl.setId(resultId);
                 resUrl.setCreatedAt(resultCreatedAt);
                 resUrl.setFormattedTimestamp(TimestampFormatter.dateFormatter(resUrl.getCreatedAt()));
+                List<UrlCheck> checks = UrlCheckRepository.findByUrlId(resultId);
+                resUrl.setChecks(checks);
                 return Optional.of(resUrl);
             }
             return Optional.empty();
         }
     }
-    //Находит и возвращает объект Url по его имени
+
     public static Optional<Url> findByName(String name) throws SQLException {
         String sql = "SELECT * FROM urls WHERE name = ?";
         try (var conn = dataSource.getConnection();
@@ -67,7 +60,7 @@ public class UrlRepository extends BaseRepository {
             if (resultSet.next()) {
                 var resultName = resultSet.getString("name");
                 var resultId = resultSet.getLong("id");
-                var resultCreatedAt = resultSet.getTimestamp("createdAt");
+                var resultCreatedAt = resultSet.getTimestamp("created_at");
                 Url resUrl = new Url(resultName);
                 resUrl.setId(resultId);
                 resUrl.setCreatedAt(resultCreatedAt);
@@ -77,18 +70,9 @@ public class UrlRepository extends BaseRepository {
             return Optional.empty();
         }
     }
-    //Удаляет объект Url из базы данных по его имени
-    public static void destroy(Url url) throws SQLException {
-        String sql = "DELETE FROM urls WHERE name = ?";
-        try (var conn = dataSource.getConnection();
-             var preparedStatement = conn.prepareStatement(sql)) {
-            preparedStatement.setString(1, url.getName());
-            preparedStatement.execute();
-        }
-    }
-    //Возвращает список всех объектов Url из базы данных
+
     public static List<Url> getEntities() throws SQLException {
-        String sql = "SELECT * FROM urls";
+        String sql = "SELECT * FROM urls ORDER BY created_at ASC";
         try (var conn = dataSource.getConnection();
              var preparedStatement = conn.prepareStatement(sql)) {
             var resultSet = preparedStatement.executeQuery();
@@ -97,7 +81,7 @@ public class UrlRepository extends BaseRepository {
                 var name = resultSet.getString("name");
                 var url = new Url(name);
                 url.setId(resultSet.getLong("id"));
-                url.setCreatedAt(resultSet.getTimestamp("createdAt"));
+                url.setCreatedAt(resultSet.getTimestamp("created_at"));
                 result.add(url);
             }
             return result;
