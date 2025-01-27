@@ -14,3 +14,6 @@ app/daemon/8.5/daemon-19316.out.log
 /app/native
 /app/jdks
 /.gradle/
+jte-classes/gg/jte/generated/ondemand/
+app/jte-classes/gg/jte/generated/ondemand/
+
