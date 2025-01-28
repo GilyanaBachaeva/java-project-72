@@ -1,11 +1,11 @@
-package repository;
+package hexlet.code.repository;
 
 import hexlet.code.model.Url;
 import hexlet.code.model.UrlCheck;
-import hexlet.code.util.TimestampFormatter;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,16 +13,16 @@ import java.util.Optional;
 public class UrlRepository extends BaseRepository {
 
     public static void save(Url url) throws SQLException {
-        String sql = "INSERT INTO urls (name) VALUES (?)";
+        String sql = "INSERT INTO urls (name, created_at) VALUES (?, ?)";
         try (var conn = dataSource.getConnection();
              var preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, url.getName());
+            preparedStatement.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
             preparedStatement.executeUpdate();
             var generatedKeys = preparedStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 url.setId(generatedKeys.getLong(1));
-                url.setCreatedAt(generatedKeys.getTimestamp(2));
-                url.setFormattedTimestamp(TimestampFormatter.dateFormatter(url.getCreatedAt()));
+                url.setCreatedAt(new Timestamp(System.currentTimeMillis())/*generatedKeys.getTimestamp(2)*/);
             } else {
                 throw new SQLException("DB have not returned an id or createdAt after saving an entity");
             }
@@ -42,7 +42,6 @@ public class UrlRepository extends BaseRepository {
                 Url resUrl = new Url(resultName);
                 resUrl.setId(resultId);
                 resUrl.setCreatedAt(resultCreatedAt);
-                resUrl.setFormattedTimestamp(TimestampFormatter.dateFormatter(resUrl.getCreatedAt()));
                 List<UrlCheck> checks = UrlCheckRepository.findByUrlId(resultId);
                 resUrl.setChecks(checks);
                 return Optional.of(resUrl);
@@ -64,7 +63,6 @@ public class UrlRepository extends BaseRepository {
                 Url resUrl = new Url(resultName);
                 resUrl.setId(resultId);
                 resUrl.setCreatedAt(resultCreatedAt);
-                resUrl.setFormattedTimestamp(TimestampFormatter.dateFormatter(resUrl.getCreatedAt()));
                 return Optional.of(resUrl);
             }
             return Optional.empty();

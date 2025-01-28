@@ -1,11 +1,11 @@
-package repository;
+package hexlet.code.repository;
 
 import hexlet.code.model.Url;
 import hexlet.code.model.UrlCheck;
-import hexlet.code.util.TimestampFormatter;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,8 +13,8 @@ import java.util.List;
 public class UrlCheckRepository extends BaseRepository {
 
     public static void save(UrlCheck urlCheck, Url url) throws SQLException {
-        String sql = "INSERT INTO url_checks (status_code, title, h1, description, url_id)"
-                + " VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO url_checks (status_code, title, h1, description, url_id, created_at)"
+                + " VALUES (?, ?, ?, ?, ?, ?)";
         try (var conn = dataSource.getConnection();
              var preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setInt(1, urlCheck.getStatusCode());
@@ -22,12 +22,12 @@ public class UrlCheckRepository extends BaseRepository {
             preparedStatement.setString(3, urlCheck.getH1());
             preparedStatement.setString(4, urlCheck.getDescription());
             preparedStatement.setLong(5, url.getId());
+            preparedStatement.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
             preparedStatement.executeUpdate();
             var generatedKeys = preparedStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 urlCheck.setId(generatedKeys.getLong(1));
-                urlCheck.setCreatedAt(generatedKeys.getTimestamp(2));
-                urlCheck.setFormattedTimestamp(TimestampFormatter.dateFormatter(urlCheck.getCreatedAt()));
+                urlCheck.setCreatedAt(new Timestamp(System.currentTimeMillis()/*generatedKeys.getTimestamp(2)*/));
             } else {
                 throw new SQLException("DB have not returned an id or createdAt after saving an entity");
             }
@@ -56,7 +56,6 @@ public class UrlCheckRepository extends BaseRepository {
                         resultUrlId);
                 urlCheck.setId(resultId);
                 urlCheck.setCreatedAt(resultCreatedAt);
-                urlCheck.setFormattedTimestamp(TimestampFormatter.dateFormatter(urlCheck.getCreatedAt()));
                 listOfChecks.add(urlCheck);
             }
             return listOfChecks;
@@ -106,7 +105,6 @@ public class UrlCheckRepository extends BaseRepository {
                 UrlCheck urlCheck = new UrlCheck(statusCode, title, h1, description, urlId);
                 urlCheck.setId(resultSet.getLong("id"));
                 urlCheck.setCreatedAt(resultSet.getTimestamp("created_at"));
-                urlCheck.setFormattedTimestamp(TimestampFormatter.dateFormatter(resultSet.getTimestamp("created_at")));
                 result.add(urlCheck);
             }
             return result;

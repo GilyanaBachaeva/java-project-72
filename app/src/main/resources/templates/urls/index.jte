@@ -1,11 +1,12 @@
 @import hexlet.code.dto.urls.UrlsPage
+@import hexlet.code.util.TimestampFormatter
 @param UrlsPage page
 
 @template.layout.page(
 content = @`
     <section>
         @if(page.getFlash() != null)
-            <div class="rounded-0 m-0 alert alert-dismissible fade show alert-success" role="alert">
+            <div class="rounded-0 m-0 alert alert-dismissible fade show ${page.getFlashType()}" role="alert">
                 <p class="m-0">${page.getFlash()}</p>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -30,14 +31,22 @@ content = @`
                                 <td>
                                     <a href="/urls/${url.getId()}">${url.getName()}</a>
                                 </td>
-                                <td>
-                                    пока что тут ничего
-                                    <!-- ${url.getLastCheck()} -->
-                                </td>
-                                <td>
-                                    пока что тут ничего
-                                    <!-- ${url.getCheckCode()} -->
-                                </td>
+                                @if(page.getChecks().isEmpty())
+                                    <td>
+                                    </td>
+                                    <td>
+                                    </td>
+                                @endif
+                                @for(var check : page.getChecks())
+                                    @if(check.getUrlId() == url.getId())
+                                        <td>
+                                            ${check.getCreatedAt().toLocalDateTime().format(TimestampFormatter.formatterType1)}
+                                        </td>
+                                        <td>
+                                            ${check.getStatusCode()}
+                                        </td>
+                                    @endif
+                                @endfor
                             </tr>
                         @endfor
                     </tbody>

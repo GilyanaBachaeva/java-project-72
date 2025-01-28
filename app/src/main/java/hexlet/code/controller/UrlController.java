@@ -7,15 +7,14 @@ import hexlet.code.model.UrlCheck;
 import hexlet.code.util.NamedRoutes;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
-import repository.UrlCheckRepository;
-import repository.UrlRepository;
+import hexlet.code.repository.UrlCheckRepository;
+import hexlet.code.repository.UrlRepository;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +37,7 @@ public class UrlController {
         var id = ctx.pathParamAsClass("id", Long.class).get();
         var url = UrlRepository.findById(id)
                 .orElseThrow(() -> new NotFoundResponse("Url not found"));
-        var page = new UrlPage(Collections.singletonList(url));
+        var page = new UrlPage(url);
         String flash = ctx.consumeSessionAttribute("flash");
         page.setFlash(flash);
         String flashType = ctx.consumeSessionAttribute("flashType");
@@ -64,7 +63,7 @@ public class UrlController {
                 ctx.sessionAttribute("flashType", "alert-info");
             }
             ctx.redirect(NamedRoutes.urlsPath());
-        } catch (URISyntaxException | MalformedURLException | IllegalArgumentException e) {
+        } catch (URISyntaxException | IllegalArgumentException | IOException e) {
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.sessionAttribute("flashType", "alert-danger");
             ctx.redirect(NamedRoutes.rootPath());

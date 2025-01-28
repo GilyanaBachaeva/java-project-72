@@ -1,4 +1,5 @@
 @import hexlet.code.dto.urls.UrlPage
+@import hexlet.code.util.TimestampFormatter
 @param UrlPage page
 
 @template.layout.page(
@@ -24,7 +25,7 @@ content = @`
                 </tr>
                 <tr>
                     <td>Дата создания</td>
-                    <td>${page.getUrl().getFormattedTimestamp()}</td>
+                    <td>${page.getUrl().getCreatedAt()..toLocalDateTime().format(TimestampFormatter.formatterType1)}</td>
                 </tr>
                 </tbody>
             </table>
@@ -34,8 +35,7 @@ content = @`
             </form>
             <table class="table table-bordered table-hover mt-3">
                 <thead>
-                    <tr>
-                        <th class="col-1">ID</th>
+                    <tr><th class="col-1">ID</th>
                         <th class="col-1">Код ответа</th>
                         <th>title</th>
                         <th>h1</th>
@@ -45,42 +45,28 @@ content = @`
                 </thead>
                 <tbody>
                     @if(page.getUrl().getChecks().isEmpty())
-                        <tr>
-                            <td colspan="6">Нет проверок</td>
-                        </tr>
+
                     @else
                         @for(var check : page.getUrl().getChecks())
                             <tr>
-                                <td>${check.getId()}</td>
-                                <td>${check.getStatusCode()}</td>
-                                <td>${check.getTitle()}</td>
-                                <td>${check.getH1()}</td>
-                                <td>${check.getDescription()}</td>
-                                <td>${check.getFormattedTimestamp()}</td>
-                            </tr>
-                        @endfor
-                    @endif
-                </tbody>
-            </table>
-
-            <h2 class="mt-5">Другие URL</h2>
-            <table class="table table-bordered table-hover mt-3">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Имя</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if(page.getUrls().isEmpty())
-                        <tr>
-                            <td colspan="2">Нет других URL</td>
-                        </tr>
-                    @else
-                        @for(var otherUrl : page.getUrls())
-                            <tr>
-                                <td>${otherUrl.getId()}</td>
-                                <td>${otherUrl.getName()}</td>
+                                <td>
+                                    ${check.getId()}
+                                </td>
+                                <td>
+                                    ${check.getStatusCode()}
+                                </td>
+                                <td>
+                                    ${check.getTitle()}
+                                </td>
+                                <td>
+                                    ${check.getH1()}
+                                </td>
+                                <td>
+                                    ${check.getDescription()}
+                                </td>
+                                <td>
+                                    ${check.getCreatedAt().toLocalDateTime().format(TimestampFormatter.formatterType1)}
+                                </td>
                             </tr>
                         @endfor
                     @endif
