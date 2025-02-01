@@ -50,7 +50,7 @@ public class App {
         return app;
     }
 
-    public static int getPort() {
+    private static int getPort() {
         var port = System.getenv().getOrDefault("DB_PORT", "7070");
         return Integer.valueOf(port);
     }
